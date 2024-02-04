@@ -2,7 +2,6 @@
 <html lang="en" class="h-full">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, height=device-height, viewport-fit=cover"
@@ -12,17 +11,15 @@
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="description" content="NJCSO Instrument Tracker" />
-		<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-		<link rel="icon" href="favicon-32x32.png" type="image/png" sizes="32x32" />
-		<link rel="icon" href="favicon-16x16.png" type="image/png" sizes="16x16" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<link rel="icon" href="%sveltekit.assets%/favicon-32x32.png" type="image/png" sizes="32x32" />
+		<link rel="icon" href="%sveltekit.assets%/favicon-16x16.png" type="image/png" sizes="16x16" />
+		<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
 		<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
 		<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
 		%sveltekit.head%
 	</head>
-	<body
-		data-sveltekit-preload-data="hover"
-		class="h-full bg-[url(background.png)] bg-cover bg-center bg-no-repeat"
-	>
+	<body data-sveltekit-preload-data="hover" class="h-full">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

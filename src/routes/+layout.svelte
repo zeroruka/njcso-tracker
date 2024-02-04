@@ -6,7 +6,6 @@
 	import '../app.pcss';
 
 	onMount(async () => {
-		console.log('PWA Info', pwaInfo);
 		if (pwaInfo) {
 			const { registerSW } = await import('virtual:pwa-register');
 			registerSW({ immediate: true });

@@ -9,7 +9,7 @@
 	export let onSuccess: (decodedText: string, decodedResult: any) => void;
 	export let onError: (error: any) => void = () => {};
 
-	let { snapshot, send, actorRef } = getContext('stateMachine') as any;
+	let { snapshot, send } = getContext('stateMachine') as any;
 
 	let className: string = '';
 	let reader: HTMLElement;
@@ -53,14 +53,13 @@
 		}
 	}
 	function stopScan() {
-		if (html5QrCode) {
+		if (html5QrCode?.getState() === Html5QrcodeScannerState.SCANNING) {
 			html5QrCode.stop();
 		}
 	}
 
 	function pauseScan() {
-		console.log('pausing');
-		if (html5QrCode) {
+		if (html5QrCode?.getState() === Html5QrcodeScannerState.SCANNING) {
 			html5QrCode.pause();
 		}
 	}
