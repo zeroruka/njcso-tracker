@@ -29,12 +29,18 @@ export async function PATCH({ request }) {
 	await updateRow(id, values);
 
 	// Log the action
-	appendRow({
-		instrument,
-		id,
-		action,
-		date: new Date().toLocaleString()
-	});
+	(async () => {
+		try {
+			await appendRow({
+				instrument,
+				id,
+				action,
+				date: new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
+			});
+		} catch (error) {
+			console.error('Failed to append row:', error);
+		}
+	})();
 
 	return json({ success: true });
 }

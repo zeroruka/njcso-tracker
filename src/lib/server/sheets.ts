@@ -11,10 +11,7 @@ import { google } from 'googleapis';
 
 type SheetsApi = ReturnType<typeof google.sheets>;
 
-let sheetsApi: SheetsApi;
-
 async function initializeSheetsApi(): Promise<SheetsApi> {
-	// if (sheetsApi) return sheetsApi;
 	const auth = await google.auth.getClient({
 		projectId: PROJECT_ID,
 		credentials: {
@@ -26,8 +23,7 @@ async function initializeSheetsApi(): Promise<SheetsApi> {
 		},
 		scopes: ['https://www.googleapis.com/auth/spreadsheets']
 	});
-	sheetsApi = google.sheets({ version: 'v4', auth });
-	return sheetsApi;
+	return google.sheets({ version: 'v4', auth });
 }
 
 export async function getValues(range: string) {
