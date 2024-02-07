@@ -14,7 +14,7 @@ type SheetsApi = ReturnType<typeof google.sheets>;
 let sheetsApi: SheetsApi;
 
 async function initializeSheetsApi(): Promise<SheetsApi> {
-	if (sheetsApi) return sheetsApi;
+	// if (sheetsApi) return sheetsApi;
 	const auth = await google.auth.getClient({
 		projectId: PROJECT_ID,
 		credentials: {
