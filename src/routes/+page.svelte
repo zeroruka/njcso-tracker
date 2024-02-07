@@ -123,14 +123,14 @@
 	)}
 />
 
-<div
+<!-- <div
 	class="fixed top-0 z-50"
 	style="padding: env(safe-area-inset-top) 0 0 env(safe-area-inset-left);"
 >
 	<Button on:click={() => onSuccess('c610dc3b', '')}>instrum</Button>
 	<Button on:click={() => onSuccess('D', '')}>zone</Button>
 	<Button on:click={() => updateValues()}>update</Button>
-</div>
+</div> -->
 <Infobox bind:instrumentData />
 <QrScanner {onSuccess}>
 	<div
