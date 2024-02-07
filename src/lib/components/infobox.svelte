@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import type { InstrumentData } from '$lib/server/sheets';
 	import { cn, flyAndScale } from '$lib/utils';
 	import { Flip } from 'gsap/all';
 	import { Check, DoorClosed, DoorOpen, Loader2, MoreHorizontal, X } from 'lucide-svelte';

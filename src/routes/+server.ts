@@ -1,4 +1,4 @@
-import { query, updateRow } from '$lib/server/sheets';
+import { appendRow, query, updateRow } from '$lib/server/sheets';
 import { error, json } from '@sveltejs/kit';
 
 export async function GET({ url }) {
@@ -20,13 +20,21 @@ export async function GET({ url }) {
 
 export async function PATCH({ request }) {
 	const body = await request.json();
-	const { id, values } = body;
+	const { id, values, action, instrument } = body;
 
-	if (!id || !values) {
-		error(400, 'Missing id or values');
+	if (!id || !values || !action || !instrument) {
+		error(400, 'Missing id or values or action');
 	}
 
 	await updateRow(id, values);
+
+	// Log the action
+	appendRow({
+		instrument,
+		id,
+		action,
+		date: new Date().toLocaleString()
+	});
 
 	return json({ success: true });
 }

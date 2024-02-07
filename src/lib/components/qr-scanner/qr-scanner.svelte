@@ -2,7 +2,6 @@
 	import { cn } from '$lib/utils';
 	import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import ViewportIndicator from './viewport-indicator.svelte';
 

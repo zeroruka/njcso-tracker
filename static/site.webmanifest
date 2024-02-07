@@ -1,6 +1,6 @@
 {
-	"name": "PassAway",
-	"short_name": "PassAway",
+	"name": "NJCSO",
+	"short_name": "NJCSO",
 	"icons": [
 		{
 			"src": "/pwa-192x192.png",
@@ -30,6 +30,6 @@
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#121212",
-	"theme_color": "#FFFFFF",
+	"theme_color": "#121212",
 	"description": "NJCSO Instrument Tracker"
 }

@@ -9,12 +9,12 @@ import {
 } from '$env/static/private';
 import { google } from 'googleapis';
 
-type SheetsApi = ReturnType<typeof google.sheets> | null;
+type SheetsApi = ReturnType<typeof google.sheets>;
 
-let sheets_api: SheetsApi = null;
+let sheetsApi: SheetsApi;
 
-export const sheets = async () => {
-	if (sheets_api) return sheets_api;
+async function initializeSheetsApi(): Promise<SheetsApi> {
+	if (sheetsApi) return sheetsApi;
 	const auth = await google.auth.getClient({
 		projectId: PROJECT_ID,
 		credentials: {
@@ -26,105 +26,103 @@ export const sheets = async () => {
 		},
 		scopes: ['https://www.googleapis.com/auth/spreadsheets']
 	});
-	sheets_api = google.sheets({ version: 'v4', auth });
-	return sheets_api;
-};
+	sheetsApi = google.sheets({ version: 'v4', auth });
+	return sheetsApi;
+}
 
 export async function getValues(range: string) {
-	const api = await sheets();
-	const rsp = await api.spreadsheets.values.get({
+	const api = await initializeSheetsApi();
+	const response = await api.spreadsheets.values.get({
 		spreadsheetId: SHEET_ID,
 		range
 	});
-
-	return rsp.data.values;
+	return response.data.values;
 }
 
-type Schema = {
-	instrument: string;
-	id: string;
-	row: number;
-};
+async function makeSheetsApiCall<T>(callback: (api: SheetsApi) => Promise<T>) {
+	const api = await initializeSheetsApi();
+	return callback(api);
+}
 
-export type InstrumentData = {
-	instrument: string;
-	id: string;
-	loaned_by: string;
-	zone: string;
-	status: string;
-	location: string;
-	row: number;
-};
-
-export async function query(queryObj: Partial<Schema>): Promise<InstrumentData | null> {
-	const api = await sheets();
-	const rsp = await api.spreadsheets.values.get({
-		spreadsheetId: SHEET_ID,
-		range: 'A1:J999'
+export async function query(queryObj: Partial<InstrumentData>): Promise<InstrumentData | null> {
+	return makeSheetsApiCall(async (api) => {
+		const response = await api.spreadsheets.values.get({
+			spreadsheetId: SHEET_ID,
+			range: 'A1:J999'
+		});
+		const values = response.data.values;
+		if (!values) return null;
+		const rows = parseRows(values);
+		return rows.find((row) =>
+			Object.entries(queryObj).every(([key, value]) => row[key] === value)
+		) as InstrumentData;
 	});
-
-	const values = rsp.data.values;
-	if (!values) return null;
-	const rows = parseRows(values);
-	// Find the first object that matches all key-value pairs in queryObj
-	const matchingObject = rows.find((row) =>
-		Object.entries(queryObj).every(([key, value]) => row[key] === value)
-	);
-
-	return matchingObject as InstrumentData;
 }
 
 export async function updateRow(id: string, values: Partial<InstrumentData>) {
-	const api = await sheets();
-	const currentValues = await query({ id });
-
-	if (!currentValues) {
-		throw new Error('No matching row');
-	}
-
-	const newValues = Object.keys(currentValues)
-		.filter((key) => key !== 'row')
-		.map((key) => {
-			// If the key exists in the new values, use it, otherwise retain the original value
-			return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : currentValues[key];
+	return makeSheetsApiCall(async (api) => {
+		const currentValues = await query({ id });
+		if (!currentValues) throw new Error('No matching row');
+		const newValues = Object.keys(currentValues)
+			.filter((key): key is keyof InstrumentData => key !== 'row')
+			.map((key) => values[key] ?? currentValues[key]);
+		const response = await api.spreadsheets.values.update({
+			spreadsheetId: SHEET_ID,
+			range: `A${currentValues.row}:J${currentValues.row}`,
+			valueInputOption: 'RAW',
+			requestBody: { values: [newValues] }
 		});
-
-	const updateRsp = await api.spreadsheets.values.update({
-		spreadsheetId: SHEET_ID,
-		range: `A${currentValues.row}:J${currentValues.row}`,
-		valueInputOption: 'RAW',
-		requestBody: {
-			values: [newValues]
-		}
+		return response.data;
 	});
-
-	console.log('updateRsp', updateRsp.data);
-
-	return updateRsp.data;
 }
 
-type Row = { [key: string]: string | number | undefined };
-
-function parseRows(values: string[][]) {
-	const keys = values[0].map((key) => toSnakeCase(key));
-	const objects: Row[] = [];
-
-	for (let i = 1; i < values.length; i++) {
-		// Skip rows where all values are undefined
-		if (!values[i][0]) {
-			continue;
-		}
-
-		const obj: Row = {};
-		for (let j = 0; j < keys.length; j++) {
-			obj[keys[j]] = values[i][j];
-		}
-		obj['row'] = i + 1;
-		objects.push(obj);
-	}
-
-	return objects;
+export async function appendRow(values: LogData) {
+	return makeSheetsApiCall(async (api) => {
+		await api.spreadsheets.batchUpdate({
+			spreadsheetId: SHEET_ID,
+			requestBody: {
+				requests: [
+					{
+						insertDimension: {
+							range: {
+								sheetId: 1266756917,
+								dimension: 'ROWS',
+								startIndex: 1,
+								endIndex: 2
+							},
+							inheritFromBefore: false
+						}
+					}
+				]
+			}
+		});
+		const response = await api.spreadsheets.values.update({
+			spreadsheetId: SHEET_ID,
+			range: 'Logs!A2',
+			valueInputOption: 'RAW',
+			requestBody: {
+				values: [[values.date, values.instrument, values.id, values.action]]
+			}
+		});
+		return response.data;
+	});
 }
+
+function parseRows(values: string[][]): Row[] {
+	const keys = values[0].map(toSnakeCase);
+	return values
+		.slice(1)
+		.map((row, index) => {
+			const obj: Row = { row: index + 2 };
+			row.forEach((value, i) => {
+				obj[keys[i]] = value;
+			});
+			return obj;
+		})
+		.filter((obj) => obj[keys[0]]); // Assuming the first column is always filled for valid rows
+}
+
+type Row = { [key: string]: string | number | undefined; row: number };
 
 function toSnakeCase(str: string): string {
 	return str
