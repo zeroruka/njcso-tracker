@@ -40,6 +40,8 @@
   },
   "type": "module",
   "dependencies": {
+    "@vercel/analytics": "^1.1.3",
+    "@vercel/speed-insights": "^1.0.9",
     "@xstate/svelte": "^3.0.2",
     "bits-ui": "^0.16.0",
     "clsx": "^2.1.0",
